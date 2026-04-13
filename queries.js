@@ -5,12 +5,25 @@ const pool = require('./db/pool');
 //    Return an array of objects. Each object should have: title, url, username.
 const getAllBookmarksWithUsername = async () => {
   // YOUR CODE HERE
+    const result = await pool.query(`
+    SELECT b.title, b.url, u.username
+    FROM bookmarks b
+    JOIN users u ON b.user_id = u.user_id
+  `);
+  return result.rows;
 };
 
 // 2. Get all bookmarks saved by a specific user.
 //    Return an array of objects. Each object should have: title, url, username.
 const getBookmarksByUsername = async (username) => {
   // YOUR CODE HERE
+   const result = await pool.query(`
+    SELECT b.title, b.url, u.username
+    FROM bookmarks b
+    JOIN users u ON b.user_id = u.user_id
+    WHERE u.username = $1
+  `, [username]);
+  return result.rows;
 };
 
 // 3. Get all bookmarks that have at least one tag, along with the tag name.
@@ -18,6 +31,14 @@ const getBookmarksByUsername = async (username) => {
 //    Return an array of objects. Each object should have: title, url, tag_name.
 const getBookmarksWithAllTags = async () => {
   // YOUR CODE HERE
+    const result = await pool.query(`
+    SELECT b.title, b.url, t.tag_name
+    FROM bookmarks b
+    JOIN bookmarks_tags bt ON b.bookmark_id = bt.bookmark_id
+    JOIN tags t ON bt.tag_id = t.tag_id
+  `);
+  return result.rows;
+
 };
 
 // 4. Get all users and the total number of bookmarks they have saved.
@@ -26,12 +47,27 @@ const getBookmarksWithAllTags = async () => {
 //    Return an array of objects. Each object should have: username, total_bookmarks.
 const getUsersWithBookmarkCount = async () => {
   // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT u.username, COUNT(b.bookmark_id) AS total_bookmarks FROM users u 
+    LEFT JOIN bookmarks b ON u.user_id
+    GROUP BY u.user_id`);
+    return result.rows;
 };
 
 // 5. Get all bookmarks that have no tags.
 //    Return an array of objects. Each object should have: title, url, username.
 const getBookmarksWithNoTags = async () => {
   // YOUR CODE HERE
+  const result = await pool.query(`
+        SELECT b.title, b.url, u.username
+    FROM bookmarks b
+    JOIN users u ON b.user_id = u.user_id
+    LEFT JOIN bookmarks_tags bt ON b.bookmark_id = bt.bookmark_id
+    WHERE bt.bookmark_id IS NULL
+  `);
+  return result.rows;
+
+  
 };
 
 const main = async () => {
